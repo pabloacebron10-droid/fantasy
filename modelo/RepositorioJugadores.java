@@ -84,7 +84,7 @@ public class RepositorioJugadores {
         // Allen Iverson - Philadelphia 76ers (imagen remota por URL web)
         listaJugadores.add(new JugadorLeyenda(
                 "Allen", "Iverson", "Philadelphia 76ers", "Base",
-                3, 29, 1.83, "https://share.google/BSyf9TqlwhsMOA1Ls",
+                3, 29, 1.83, "https://media.gettyimages.com/id/1934811800/es/foto/allen-iverson-shooting-guard-and-point-guard-for-the-philadelphia-76ers-looks-on-with-hands-on.jpg?s=612x612&w=gi&k=20&c=F0uhTazSo8Qx8uB3HxOWIGthZWubKv5_soJqB_GRvJM=",
                 96, 80, 65, 87, 92,
                 "Años 2000 (1996-2010)",
                 "1x MVP Temporada, 4x Máximo Anotador NBA, 11x All-Star, Icono cultural 'The Answer'"
@@ -102,7 +102,7 @@ public class RepositorioJugadores {
         // Kevin Durant - Golden State Warriors / OKC (imagen remota por URL web)
         listaJugadores.add(new JugadorLeyenda(
                 "Kevin", "Durant", "Golden State Warriors", "Alero",
-                35, 33, 2.08, "https://share.google/487dDt3Uo8yKHSvAy",
+                35, 33, 2.08, "https://media.gettyimages.com/id/2240028645/es/foto/houston-texas-kevin-durant-of-the-houston-rockets-reacts-against-the-utah-jazz-during-the.jpg?s=612x612&w=gi&k=20&c=bcoYpEGSecEK7e7Yo8nK6EPmxgojmoAaFpwhjHrnhO4=",
                 97, 85, 84, 86, 98,
                 "Años 2010 (2007-act.)",
                 "2x Campeón NBA, 1x MVP Temporada, 2x MVP Finales, 4x Máximo Anotador NBA"
@@ -111,7 +111,7 @@ public class RepositorioJugadores {
         // Kareem Abdul-Jabbar - Los Angeles Lakers / Bucks (imagen remota por URL web)
         listaJugadores.add(new JugadorLeyenda(
                 "Kareem", "Abdul-Jabbar", "Los Angeles Lakers", "Pívot",
-                33, 38, 2.18, "https://share.google/AmHgsaeClUSvBXuay",
+                33, 38, 2.18, "https://media.gettyimages.com/id/509718959/es/foto/american-basketball-player-kareem-abdul-jabbar-of-the-los-angeles-lakers-lines-up-a-shot.jpg?s=612x612&w=gi&k=20&c=U08OP1hCdd-l48MEIBmIkaUNZ1TX298fbuuafzsaZYk=",
                 98, 93, 97, 76, 88,
                 "Años 70 - 80 (1969-1989)",
                 "6x Campeón NBA, 6x MVP Temporada (Récord), Creador del 'Skyhook' imparable"
