@@ -2,19 +2,9 @@ package lib.gui;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -51,9 +41,7 @@ public class Estilos {
     public static final Font FUENTE_VALORACION = new Font("Segoe UI", Font.BOLD, 22);
 
     // Cache para almacenar imagenes y evitar descargarlas o reescalarlas repetidamente
-    private static final int MAX_INTENTOS_DESCARGA = 3;
-    private static final int TIMEOUT_DESCARGA_MS = 15000;
-    private static final ConcurrentMap<String, ImageIcon> cacheImagenes = new ConcurrentHashMap<String, ImageIcon>();
+    private static HashMap<String, ImageIcon> cacheImagenes = new HashMap<String, ImageIcon>();
 
     /**
      * Crea un boton principal naranja con letras blancas en negrita de alto contraste.
@@ -140,7 +128,7 @@ public class Estilos {
     /**
      * Carga y escala una imagen desde los recursos del proyecto o desde una URL.
      */
-    public static ImageIcon cargarImagen(String rutaOUrl, int ancho, int alto, final JLabel labelDestino) {
+    public static ImageIcon cargarImagen(String rutaOUrl, int ancho, int alto, JLabel labelDestino) {
         if (rutaOUrl == null || rutaOUrl.trim().isEmpty()) {
             return cargarImagenLocal("/images/default_player.png", ancho, alto);
         }
@@ -156,72 +144,26 @@ public class Estilos {
 
         // Si es una direccion web de Internet
         if (rutaOUrl.startsWith("http://") || rutaOUrl.startsWith("https://")) {
-            // Mostramos mientras tanto la imagen local de reserva
-            final ImageIcon iconoReserva = cargarImagenLocal("/images/default_player.png", ancho, alto);
-            if (labelDestino != null) {
-                labelDestino.setIcon(iconoReserva);
+            try {
+                BufferedImage imagen = ImageIO.read(new URL(rutaOUrl));
+                if (imagen == null) {
+                    throw new IOException("La URL no contiene una imagen compatible.");
+                }
+                Image escalada = imagen.getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
+                ImageIcon iconoWeb = new ImageIcon(escalada);
+                cacheImagenes.put(claveCache, iconoWeb);
+                if (labelDestino != null) {
+                    labelDestino.setIcon(iconoWeb);
+                }
+                return iconoWeb;
+            } catch (IOException e) {
+                System.err.println("No se pudo cargar la imagen " + rutaOUrl + ": " + e.getMessage());
+                ImageIcon iconoReserva = cargarImagenLocal("/images/default_player.png", ancho, alto);
+                if (labelDestino != null) {
+                    labelDestino.setIcon(iconoReserva);
+                }
+                return iconoReserva;
             }
-
-            // Descargamos en segundo plano para que la ventana no se quede pillada
-            final String urlDescarga = rutaOUrl;
-            final int w = ancho;
-            final int h = alto;
-            final String clave = claveCache;
-
-            SwingWorker<ImageIcon, Void> trabajador = new SwingWorker<ImageIcon, Void>() {
-                @Override
-                protected ImageIcon doInBackground() throws Exception {
-                    IOException ultimoError = null;
-                    for (int intento = 1; intento <= MAX_INTENTOS_DESCARGA; intento++) {
-                        try {
-                            String urlImagen = resolverUrlImagen(urlDescarga);
-                            URLConnection conexion = URI.create(urlImagen).toURL().openConnection();
-                            conexion.setConnectTimeout(TIMEOUT_DESCARGA_MS);
-                            conexion.setReadTimeout(TIMEOUT_DESCARGA_MS);
-                            conexion.setRequestProperty("User-Agent", "Mozilla/5.0");
-                            BufferedImage leida;
-                            try (java.io.InputStream entrada = conexion.getInputStream()) {
-                                leida = ImageIO.read(entrada);
-                            }
-                            if (leida == null) {
-                                throw new IOException("La URL no contiene una imagen compatible.");
-                            }
-                            Image escalada = leida.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-                            return new ImageIcon(escalada);
-                        } catch (IOException e) {
-                            ultimoError = e;
-                            if (intento < MAX_INTENTOS_DESCARGA) {
-                                Thread.sleep(1000);
-                            }
-                        }
-                    }
-                    throw ultimoError;
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        ImageIcon resultado = get();
-                        if (resultado != null) {
-                            cacheImagenes.put(clave, resultado);
-                            if (labelDestino != null) {
-                                labelDestino.setIcon(resultado);
-                                labelDestino.repaint();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        cacheImagenes.put(clave, iconoReserva);
-                    } catch (java.util.concurrent.ExecutionException e) {
-                        Throwable causa = e.getCause();
-                        System.err.println("No se pudo cargar la imagen " + urlDescarga + ": "
-                                + (causa == null ? e.getMessage() : causa.getMessage()));
-                    }
-                }
-            };
-            trabajador.execute();
-
-            return iconoReserva;
         }
 
         // Carga normal de imagen local desde el classpath
@@ -231,43 +173,6 @@ public class Estilos {
             labelDestino.setIcon(iconoLocal);
         }
         return iconoLocal;
-    }
-
-    private static String resolverUrlImagen(String urlStr) throws IOException {
-        URI uri = URI.create(urlStr);
-        if (!"share.google".equalsIgnoreCase(uri.getHost())) {
-            return urlStr;
-        }
-
-        HttpURLConnection conexion = (HttpURLConnection) uri.toURL().openConnection();
-        conexion.setConnectTimeout(TIMEOUT_DESCARGA_MS);
-        conexion.setReadTimeout(TIMEOUT_DESCARGA_MS);
-        conexion.setRequestProperty("User-Agent", "Mozilla/5.0");
-        conexion.setInstanceFollowRedirects(true);
-
-        StringBuilder html = new StringBuilder();
-        try (BufferedReader lector = new BufferedReader(
-                new InputStreamReader(conexion.getInputStream(), StandardCharsets.UTF_8))) {
-            String linea;
-            while ((linea = lector.readLine()) != null) {
-                html.append(linea).append('\n');
-            }
-        } finally {
-            conexion.disconnect();
-        }
-
-        Matcher coincidencia = Pattern.compile("imgurl=([^&\"\\\\]+)").matcher(html);
-        if (!coincidencia.find()) {
-            throw new IOException("El enlace compartido no contiene una URL de imagen.");
-        }
-
-        String urlImagen = URLDecoder.decode(coincidencia.group(1), StandardCharsets.UTF_8);
-        URI uriImagen = URI.create(urlImagen);
-        if (!"http".equalsIgnoreCase(uriImagen.getScheme())
-                && !"https".equalsIgnoreCase(uriImagen.getScheme())) {
-            throw new IOException("El enlace compartido contiene una URL de imagen no válida.");
-        }
-        return urlImagen;
     }
 
     /**
