@@ -11,7 +11,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -50,7 +51,9 @@ public class Estilos {
     public static final Font FUENTE_VALORACION = new Font("Segoe UI", Font.BOLD, 22);
 
     // Cache para almacenar imagenes y evitar descargarlas o reescalarlas repetidamente
-    private static HashMap<String, ImageIcon> cacheImagenes = new HashMap<String, ImageIcon>();
+    private static final int MAX_INTENTOS_DESCARGA = 3;
+    private static final int TIMEOUT_DESCARGA_MS = 15000;
+    private static final ConcurrentMap<String, ImageIcon> cacheImagenes = new ConcurrentHashMap<String, ImageIcon>();
 
     /**
      * Crea un boton principal naranja con letras blancas en negrita de alto contraste.
@@ -168,20 +171,31 @@ public class Estilos {
             SwingWorker<ImageIcon, Void> trabajador = new SwingWorker<ImageIcon, Void>() {
                 @Override
                 protected ImageIcon doInBackground() throws Exception {
-                    String urlImagen = resolverUrlImagen(urlDescarga);
-                    URLConnection conexion = URI.create(urlImagen).toURL().openConnection();
-                    conexion.setConnectTimeout(5000);
-                    conexion.setReadTimeout(5000);
-                    conexion.setRequestProperty("User-Agent", "Mozilla/5.0");
-                    BufferedImage leida;
-                    try (java.io.InputStream entrada = conexion.getInputStream()) {
-                        leida = ImageIO.read(entrada);
+                    IOException ultimoError = null;
+                    for (int intento = 1; intento <= MAX_INTENTOS_DESCARGA; intento++) {
+                        try {
+                            String urlImagen = resolverUrlImagen(urlDescarga);
+                            URLConnection conexion = URI.create(urlImagen).toURL().openConnection();
+                            conexion.setConnectTimeout(TIMEOUT_DESCARGA_MS);
+                            conexion.setReadTimeout(TIMEOUT_DESCARGA_MS);
+                            conexion.setRequestProperty("User-Agent", "Mozilla/5.0");
+                            BufferedImage leida;
+                            try (java.io.InputStream entrada = conexion.getInputStream()) {
+                                leida = ImageIO.read(entrada);
+                            }
+                            if (leida == null) {
+                                throw new IOException("La URL no contiene una imagen compatible.");
+                            }
+                            Image escalada = leida.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+                            return new ImageIcon(escalada);
+                        } catch (IOException e) {
+                            ultimoError = e;
+                            if (intento < MAX_INTENTOS_DESCARGA) {
+                                Thread.sleep(1000);
+                            }
+                        }
                     }
-                    if (leida == null) {
-                        throw new IOException("La URL no contiene una imagen compatible.");
-                    }
-                    Image escalada = leida.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-                    return new ImageIcon(escalada);
+                    throw ultimoError;
                 }
 
                 @Override
@@ -199,7 +213,6 @@ public class Estilos {
                         Thread.currentThread().interrupt();
                         cacheImagenes.put(clave, iconoReserva);
                     } catch (java.util.concurrent.ExecutionException e) {
-                        cacheImagenes.put(clave, iconoReserva);
                         Throwable causa = e.getCause();
                         System.err.println("No se pudo cargar la imagen " + urlDescarga + ": "
                                 + (causa == null ? e.getMessage() : causa.getMessage()));
@@ -227,8 +240,8 @@ public class Estilos {
         }
 
         HttpURLConnection conexion = (HttpURLConnection) uri.toURL().openConnection();
-        conexion.setConnectTimeout(5000);
-        conexion.setReadTimeout(5000);
+        conexion.setConnectTimeout(TIMEOUT_DESCARGA_MS);
+        conexion.setReadTimeout(TIMEOUT_DESCARGA_MS);
         conexion.setRequestProperty("User-Agent", "Mozilla/5.0");
         conexion.setInstanceFollowRedirects(true);
 
