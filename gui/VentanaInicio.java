@@ -79,9 +79,9 @@ public class VentanaInicio extends JFrame {
         panelReglas.setOpaque(false);
         panelReglas.setMaximumSize(new Dimension(740, 85));
 
-        panelReglas.add(crearCajaCaracteristica("1. EXPLORA EL MERCADO", "Consulta las estadisticas reales de las 12 mayores leyendas de la NBA."));
-        panelReglas.add(crearCajaCaracteristica("2. FICHA TU TRÍO", "Selecciona exactamente 3 jugadores para formar tu equipo definitivo."));
-        panelReglas.add(crearCajaCaracteristica("3. GESTIONA TU EQUIPO", "Compara posiciones, maximiza la valoracion media y compite."));
+        panelReglas.add(crearCajaCaracteristica("1. EXPLORA EL MERCADO", "Consulta las fichas y valoraciones de 12 leyendas de la NBA."));
+        panelReglas.add(crearCajaCaracteristica("2. FICHA TU TRÍO", "Elige jugadores hasta completar los 3 puestos de tu equipo."));
+        panelReglas.add(crearCajaCaracteristica("3. GESTIONA TU EQUIPO", "Compara las valoraciones y prueba distintas combinaciones."));
 
         panelCentral.add(panelReglas);
 

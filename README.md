@@ -1,52 +1,29 @@
-# Fantasy League ⚽
+# Legends Fantasy NBA
 
-## 📋 Descripción del proyecto
+Aplicación de escritorio en Java Swing para crear un equipo Fantasy con leyendas del baloncesto. El jugador explora el mercado, consulta fichas y valoraciones, elige hasta tres leyendas y compara su equipo.
 
-Este proyecto consiste en el desarrollo de una maqueta de una aplicación de tipo **Fantasy Football**, en la que el usuario puede interactuar con una interfaz inspirada en las ligas Fantasy de fútbol.
+## Requisitos de la rúbrica
 
-El objetivo principal es diseñar una interfaz gráfica atractiva, intuitiva y fácil de utilizar, poniendo en práctica los conceptos de programación y diseño de interfaces aprendidos en clase mediante Java Swing.
+| Requisito | Cómo se cumple |
+| --- | --- |
+| Imágenes incluidas en el proyecto | Las pantallas cargan imágenes desde `src/main/resources/images` mediante `getResource`. |
+| Imágenes desde Internet | Iverson, Durant y Kareem tienen direcciones web directas en `modelo/RepositorioJugadores.java`; `ImageIO` las carga. Hace falta conexión a Internet. Si la descarga falla, se usa `default_player.png`. |
+| Más de un `JFrame` | `VentanaInicio`, `VentanaMercado` y `VentanaEquipo` son ventanas independientes. |
+| Cerrar la ventana actual | Al navegar a otra pantalla se abre la siguiente y se llama a `dispose()` en la actual. |
+| Pasar parámetros entre ventanas | Las ventanas comparten el mismo `RepositorioJugadores` y `EquipoFantasy` mediante sus constructores. |
+| Uso sencillo de `JDialog` | Los botones de detalles e informe abren diálogos modales con `JDialog`; no hay clases que hereden de `JDialog`. |
+| Tamaño fijo | Las ventanas y los diálogos establecen su tamaño y desactivan el redimensionamiento. |
+| `FlowLayout` | Se usa para organizar botones, filtros y las tarjetas del mercado. |
 
-## 🎯 Objetivos
+## Organización
 
-* Diseñar una interfaz gráfica para un juego de fútbol Fantasy.
-* Utilizar diferentes ventanas para organizar las distintas pantallas de la aplicación.
-* Gestionar el paso de información entre ventanas.
-* Incorporar recursos gráficos para mejorar la experiencia visual.
-* Aplicar los gestores de distribución y las herramientas de Java Swing trabajados en clase.
-* Desarrollar un código claro, organizado y fácil de mantener.
+- `Main.java`: inicia la aplicación.
+- `modelo/`: jugadores, equipo y catálogo de leyendas.
+- `gui/`: ventanas, tarjetas, estadísticas y estilos.
+- `src/main/resources/images/`: imágenes incluidas en el proyecto.
 
-## 🛠️ Tecnologías utilizadas
+## Ejecutar
 
-* **Java:** lenguaje de programación utilizado para desarrollar la aplicación.
-* **Java Swing:** biblioteca utilizada para construir la interfaz gráfica.
-* **JFrame:** creación y gestión de las diferentes ventanas.
-* **JDialog:** presentación de cuadros de diálogo.
-* **FlowLayout:** organización de los componentes de la interfaz.
-* **Git:** control de versiones del proyecto.
+Con Java 17 y Maven instalados, ejecuta `mvn exec:java` desde la carpeta que contiene `pom.xml`.
 
-## ✨ Características y requisitos
-
-El proyecto contempla los siguientes aspectos de la rúbrica:
-
-* **Recursos gráficos locales:** incorporación de imágenes incluidas en el proyecto.
-* **Imágenes desde Internet:** utilización de imágenes obtenidas mediante URL.
-* **Múltiples ventanas:** uso de varios `JFrame` para representar diferentes pantallas.
-* **Navegación entre pantallas:** cierre de ventanas mediante `dispose()` cuando corresponda.
-* **Paso de parámetros:** transferencia de información entre ventanas.
-* **Cuadros de diálogo:** utilización de `JDialog` para mostrar información o solicitar confirmación al usuario.
-* **Gestión del tamaño de las ventanas:** configuración de dimensiones fijas para mantener una distribución coherente.
-* **Distribución de componentes:** uso de `FlowLayout` para organizar los elementos de la interfaz.
-* **Diseño y usabilidad:** búsqueda de una interfaz visualmente atractiva, clara y sencilla de utilizar.
-
-## 🚀 Ejecución del proyecto
-
-1. Clonar o descargar el repositorio.
-2. Abrir el proyecto en un entorno de desarrollo compatible con Java.
-3. Comprobar que la estructura de carpetas y los recursos gráficos estén disponibles.
-4. Ejecutar la clase principal de la aplicación.
-
-## 👨‍💻 Autor
-
-**Pablo Acebrón**
-
-Proyecto realizado como práctica académica para la asignatura de Diseño de Interfaces.
+Las imágenes locales funcionan sin conexión. Las tres imágenes remotas necesitan Internet; sin conexión, se muestra la imagen de reserva.
